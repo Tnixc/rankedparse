@@ -91,12 +91,6 @@ pub struct PlayerTimeline {
     pub timeline_type: TimelineType,
 }
 
-#[derive(Debug)]
-pub struct Duel {
-    pub record: MatchRecord,
-    pub timelines: (Vec<PlayerTimeline>, Vec<PlayerTimeline>),
-}
-
 #[derive(Debug, Deserialize)]
 pub struct Completion {
     pub time: Millisec,

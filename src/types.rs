@@ -50,3 +50,17 @@ impl From<Millisec> for Seconds {
         Seconds(m.0 / 1000)
     }
 }
+
+impl Millisec {
+    pub fn format_human(self) -> String {
+        let total_secs = self.0 / 1000;
+        let millis = self.0 % 1000;
+        let mins = total_secs / 60;
+        let secs = total_secs % 60;
+        if mins > 0 {
+            format!("{}m {:02}.{:03}s", mins, secs, millis)
+        } else {
+            format!("{}.{:03}s", secs, millis)
+        }
+    }
+}

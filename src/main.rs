@@ -1,60 +1,42 @@
-#[allow(dead_code)]
-mod filters;
+mod analytics;
 mod match_record;
-mod parsers;
 mod types;
 
+use analytics::{CompletionTimeStats, ForfeitStats, Pipeline, SplitStats, TimelineEventStats};
 use match_record::MatchRecord;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
-use crate::types::{Millisec, Seconds};
-
 fn main() {
     for i in 1..=10 {
         let start = Instant::now();
+        println!("=== SEASON {} ===", i);
 
-        println!("SEASON {i}");
-        let path = std::env::args()
-            .nth(1)
-            .unwrap_or(format!("data/S{i}.jsonl").into());
+        let path = format!("data/S{i}.jsonl");
         let file = File::open(&path).expect("failed to open data file");
         let reader = BufReader::new(file);
 
-        let mut errors = 0;
+        let mut pipeline = Pipeline::new()
+            .add(ForfeitStats::new())
+            .add(TimelineEventStats::new())
+            .add(SplitStats::new())
+            .add(CompletionTimeStats::new())
+            // .add(TemporalStats::new())
+            ;
 
-        let duels = reader
-            .lines()
-            .filter_map(|line| line.ok())
-            .filter_map(|line| {
-                serde_json::from_str::<MatchRecord>(&line)
-                    .inspect_err(|e| {
-                        if errors < 1 {
-                            dbg!(e);
-                        }
-                        errors += 1;
-                    })
-                    .ok()
-            })
-            .filter_map(|r| r.into_duel());
-
-        let splits: Vec<Millisec> = duels
-            .flat_map(|d| {
-                let (a, b) = d.end_split();
-                [a, b].into_iter().flatten()
-            })
-            .collect();
-
-        let count = splits.len() as i128;
-        let total: Millisec = splits.into_iter().sum();
-
-        println!("parsed {count} end splits, {errors} errors");
-        if count > 0 {
-            println!("average end split: {}", Seconds::from(total / count));
+        for line in reader.lines() {
+            let Some(line) = line.ok() else { continue };
+            match serde_json::from_str::<MatchRecord>(&line) {
+                Ok(record) => pipeline.feed(&record),
+                Err(_) => pipeline.record_error(),
+            }
         }
 
+        pipeline.report();
+
         let dt = Instant::now().duration_since(start);
-        println!(">>> Iteration took {:?}", dt);
+        println!("  >>> Season {i} took {dt:?}");
+        println!();
     }
 }
