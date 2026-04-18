@@ -55,3 +55,14 @@ export const seasons: SeasonData[] = jsonlContent
   .map((line) => JSON.parse(line));
 
 export const DIVISIONS: Division[] = ["netherite", "diamond", "emerald", "gold", "iron", "coal"];
+
+let _divisionColors: Record<Division, string> | null = null;
+export function divisionColors(): Record<Division, string> {
+  if (!_divisionColors) {
+    const style = getComputedStyle(document.documentElement);
+    _divisionColors = Object.fromEntries(
+      DIVISIONS.map((div, i) => [div, style.getPropertyValue(`--vis-color${i}`).trim()]),
+    ) as Record<Division, string>;
+  }
+  return _divisionColors;
+}

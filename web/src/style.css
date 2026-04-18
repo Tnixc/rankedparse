@@ -7,16 +7,15 @@
   --color-surface: #fafafa;
 }
 
-@variant dark (&:where(.dark, .dark *));
+:root {
+  --vis-color0: #9a5cc6;
+  --vis-color1: #2cbaa8;
+  --vis-color2: #47a036;
+  --vis-color3: #dfa115;
+  --vis-color4: #cecaca;
+  --vis-color5: #555555;
+}
 
 * {
   font-family: var(--font-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-border: #2a2a2a;
-    --color-muted: #737373;
-    --color-surface: #0a0a0a;
-  }
 }
