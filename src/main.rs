@@ -48,5 +48,5 @@ fn main() {
     }
     writeln!(out, "{}", aggregate.to_json("all")).unwrap();
 
-    eprintln!("Wrote output/analytics.jsonl");
+    println!("Wrote output/analytics.jsonl");
 }

@@ -85,12 +85,6 @@ pub struct Timeline {
     pub uuid: String,
 }
 
-#[derive(Debug)]
-pub struct PlayerTimeline {
-    pub time: Millisec,
-    pub timeline_type: TimelineType,
-}
-
 #[derive(Debug, Deserialize)]
 pub struct Completion {
     pub time: Millisec,
