@@ -68,7 +68,13 @@ impl fmt::Display for TemporalStats {
         writeln!(f, "  By Day of Week:")?;
         for (i, count) in self.by_weekday.iter().enumerate() {
             let pct = (*count as f64 / self.total as f64) * 100.0;
-            writeln!(f, "    {}: {:>8} ({:.1}%)", Self::weekday_name(i), count, pct)?;
+            writeln!(
+                f,
+                "    {}: {:>8} ({:.1}%)",
+                Self::weekday_name(i),
+                count,
+                pct
+            )?;
         }
 
         writeln!(f)?;

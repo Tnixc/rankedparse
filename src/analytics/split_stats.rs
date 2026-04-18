@@ -86,7 +86,6 @@ fn process_player(events: &[&Timeline], accums: &mut [SplitAccum]) {
 
 impl Collector for SplitStats {
     fn feed(&mut self, record: &MatchRecord) {
-
         let mut by_player: HashMap<&str, Vec<&Timeline>> = HashMap::new();
         for tl in &record.timelines {
             by_player.entry(&tl.uuid).or_default().push(tl);

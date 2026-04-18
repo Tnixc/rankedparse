@@ -21,7 +21,8 @@ impl TimelineEventStats {
 impl Collector for TimelineEventStats {
     fn feed(&mut self, record: &MatchRecord) {
         self.total_matches += 1;
-        let types: HashSet<TimelineType> = record.timelines.iter().map(|tl| tl.timeline_type).collect();
+        let types: HashSet<TimelineType> =
+            record.timelines.iter().map(|tl| tl.timeline_type).collect();
         for ty in types {
             *self.matches_with.entry(ty).or_insert(0) += 1;
         }
