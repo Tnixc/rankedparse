@@ -9,7 +9,7 @@ fn player_end_split(timeline: &[PlayerTimeline]) -> Option<Millisec> {
         .iter()
         .find(|t| t.timeline_type == TimelineType::EndKillDragon)?;
 
-    Some(Millisec(enter.time.0.abs_diff(kill.time.0)))
+    Some(Millisec(enter.time.0.abs_diff(kill.time.0) as i128))
 }
 
 impl Duel {

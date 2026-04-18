@@ -11,7 +11,7 @@ use std::io::{BufRead, BufReader};
 use crate::types::{Millisec, Seconds};
 
 fn main() {
-    let path = std::env::args().nth(1).unwrap_or("data/S4.jsonl".into());
+    let path = std::env::args().nth(1).unwrap_or("data/S8.jsonl".into());
     let file = File::open(&path).expect("failed to open data file");
     let reader = BufReader::new(file);
 
@@ -24,7 +24,13 @@ fn main() {
         .filter_map(|line| line.ok())
         .filter_map(|line| {
             serde_json::from_str::<MatchRecord>(&line)
-                .inspect_err(|_| errors += 1)
+                .inspect_err(|e| {
+                    errors += 1;
+                    if errors < 1000 {
+                        dbg!(line);
+                        dbg!(e);
+                    }
+                })
                 .ok()
         })
         .filter_map(|r| r.into_duel());
@@ -36,7 +42,7 @@ fn main() {
         })
         .collect();
 
-    let count = splits.len() as u128;
+    let count = splits.len() as i128;
     let total: Millisec = splits.into_iter().sum();
 
     println!("parsed {count} end splits, {errors} errors");

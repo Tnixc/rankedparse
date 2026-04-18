@@ -13,7 +13,7 @@ pub struct MatchRecord {
     pub tag: Option<String>,
     pub date: u64,
     pub rank: Rank,
-    pub seed: Option<Seed>,
+    // pub seed: Option<Seed>,
     #[serde(rename = "type")]
     pub match_type: u8,
     pub result: Option<MatchResult>,
@@ -24,10 +24,10 @@ pub struct MatchRecord {
     pub beginner: bool,
     pub category: Option<String>,
     pub seed_type: Option<String>,
-    pub bot_source: Option<String>,
+    // pub bot_source: Option<String>,
     pub forfeited: bool,
     pub timelines: Vec<Timeline>,
-    pub spectators: serde_json::Value,
+    // pub spectators: serde_json::Value,
     pub bastion_type: Option<String>,
     pub completions: Vec<Completion>,
     pub replay_exist: bool,
@@ -256,6 +256,12 @@ pub enum TimelineType {
     ProjecteloForfeit,
     #[serde(rename = "projectelo.timeline.reset")]
     ProjecteloReset,
+    #[serde(rename = "projectelo.timeline.started")]
+    ProjecteloStart,
+    #[serde(rename = "projectelo.timeline.scout")]
+    ProjecteloScout,
+    #[serde(rename = "projectelo.timeline.eliminate")]
+    ProjecteloEliminate,
 
     // Story
     #[serde(rename = "story.cure_zombie_villager")]
