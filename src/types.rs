@@ -70,3 +70,59 @@ impl Millisec {
         }
     }
 }
+pub const NUM_DIVISIONS: usize = 6;
+
+///```md
+/// 0 ~ 599	Coal	Lowest rank in the game.
+/// 600 ~ 899	Iron	Unlocks Ruined Portals as a seed type.
+/// 900 ~ 1199	Gold	Most common rank.
+/// 1200 ~ 1499	Emerald	Unlocks Buried Treasures as a seed type.
+/// 1500 ~ 1999	Diamond	This roughly represents the top 5% of players.
+/// 2000+	Netherite	This roughly represents the top 0.5% of players.
+/// ```
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Division {
+    Coal,
+    Iron,
+    Gold,
+    Emerald,
+    Diamond,
+    Netherite,
+}
+
+impl Division {
+    pub const ALL: [Division; NUM_DIVISIONS] = [
+        Division::Coal,
+        Division::Iron,
+        Division::Gold,
+        Division::Emerald,
+        Division::Diamond,
+        Division::Netherite,
+    ];
+
+    pub fn from_elo(rank: u32) -> Self {
+        match rank {
+            0..=599 => Self::Coal,
+            600..=899 => Self::Iron,
+            900..=1199 => Self::Gold,
+            1200..=1499 => Self::Emerald,
+            1500..=1999 => Self::Diamond,
+            2000..=u32::MAX => Self::Netherite,
+        }
+    }
+
+    pub fn index(self) -> usize {
+        self as usize
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Coal => "coal",
+            Self::Iron => "iron",
+            Self::Gold => "gold",
+            Self::Emerald => "emerald",
+            Self::Diamond => "diamond",
+            Self::Netherite => "netherite",
+        }
+    }
+}

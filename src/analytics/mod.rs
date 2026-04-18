@@ -6,61 +6,80 @@ mod timeline;
 
 pub use completion_times::CompletionTimeStats;
 pub use forfeits::ForfeitStats;
-pub use playing_times::TemporalStats;
 pub use split_stats::SplitStats;
 pub use timeline::TimelineEventStats;
 
 use crate::match_record::MatchRecord;
-use std::fmt;
+use crate::types::Division;
+use std::collections::HashMap;
 
-pub trait Collector: fmt::Display {
-    fn feed(&mut self, record: &MatchRecord);
-    fn name(&self) -> &str;
+pub struct SeasonData {
+    pub forfeits: ForfeitStats,
+    pub timeline: TimelineEventStats,
+    pub splits: SplitStats,
+    pub completions: CompletionTimeStats,
+    pub records: u64,
+    pub errors: u64,
 }
 
-pub struct Pipeline {
-    collectors: Vec<Box<dyn Collector>>,
-    errors: u64,
-    records_fed: u64,
-}
-
-impl Pipeline {
+impl SeasonData {
     pub fn new() -> Self {
         Self {
-            collectors: Vec::new(),
+            forfeits: ForfeitStats::new(),
+            timeline: TimelineEventStats::new(),
+            splits: SplitStats::new(),
+            completions: CompletionTimeStats::new(),
+            records: 0,
             errors: 0,
-            records_fed: 0,
         }
-    }
-
-    pub fn add<C: Collector + 'static>(mut self, collector: C) -> Self {
-        self.collectors.push(Box::new(collector));
-        self
     }
 
     pub fn feed(&mut self, record: &MatchRecord) {
-        self.records_fed += 1;
+        self.records += 1;
         if record.players.len() != 2 {
             return;
         }
-        for collector in &mut self.collectors {
-            collector.feed(record);
-        }
+
+        let divisions: HashMap<&str, Division> = record
+            .players
+            .iter()
+            .filter_map(|p| {
+                p.elo_rate
+                    .map(|elo| (p.uuid.as_str(), Division::from_elo(elo)))
+            })
+            .collect();
+
+        self.forfeits.feed(record, &divisions);
+        self.timeline.feed(record);
+        self.splits.feed(record, &divisions);
+        self.completions.feed(record, &divisions);
     }
 
     pub fn record_error(&mut self) {
         self.errors += 1;
     }
 
-    pub fn report(&self) {
-        println!(
-            "  Total records: {}, Parse errors: {}",
-            self.records_fed, self.errors
-        );
-        println!();
-        for collector in &self.collectors {
-            println!("  --- {} ---", collector.name());
-            println!("{collector}");
+    pub fn merge(self, other: Self) -> Self {
+        Self {
+            forfeits: self.forfeits.merge(other.forfeits),
+            timeline: self.timeline.merge(other.timeline),
+            splits: self.splits.merge(other.splits),
+            completions: self.completions.merge(other.completions),
+            records: self.records + other.records,
+            errors: self.errors + other.errors,
         }
+    }
+
+    pub fn to_json(&self, season: &str) -> String {
+        let obj = serde_json::json!({
+            "season": season,
+            "records": self.records,
+            "errors": self.errors,
+            "forfeits": self.forfeits.to_json(),
+            "timeline": self.timeline.to_json(),
+            "splits": self.splits.to_json(),
+            "completion_times": self.completions.to_json(),
+        });
+        serde_json::to_string(&obj).unwrap()
     }
 }

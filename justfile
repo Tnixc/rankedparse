@@ -9,10 +9,12 @@ sync:
 build: sync
     ssh -t {{remote}} "cd {{remote_dir}} && CARGO_TERM_COLOR=always cargo build --release"
 
-# sync + build + run on remote
+# sync + build + run on remote, then sync output back
 run *ARGS: sync
-    ssh -t {{remote}} "cd {{remote_dir}} && CARGO_TERM_COLOR=always cargo build --release && cargo run --release -- {{ARGS}}"
+    ssh -t {{remote}} "cd {{remote_dir}} && CARGO_TERM_COLOR=always cargo build --release && time cargo run --release -- {{ARGS}}"
+    rsync -avz {{remote}}:{{remote_dir}}/output/ ./output/
 
-# run on remote without rebuilding
+# run on remote without rebuilding, then sync output back
 run-only *ARGS:
     ssh -t {{remote}} "cd {{remote_dir}} && CARGO_TERM_COLOR=always cargo run --release -- {{ARGS}}"
+    rsync -avz {{remote}}:{{remote_dir}}/output/ ./output/

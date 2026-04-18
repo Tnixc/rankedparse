@@ -1,12 +1,16 @@
-use super::Collector;
 use crate::match_record::{MatchRecord, TimelineType};
+use serde::Serialize;
 use std::collections::{HashMap, HashSet};
-use std::fmt;
 
 pub struct TimelineEventStats {
-    /// Number of matches that contain each event type (each match counted at most once per type)
     matches_with: HashMap<TimelineType, u64>,
     total_matches: u64,
+}
+
+#[derive(Serialize)]
+struct EventEntry {
+    event: TimelineType,
+    count: u64,
 }
 
 impl TimelineEventStats {
@@ -16,10 +20,8 @@ impl TimelineEventStats {
             total_matches: 0,
         }
     }
-}
 
-impl Collector for TimelineEventStats {
-    fn feed(&mut self, record: &MatchRecord) {
+    pub fn feed(&mut self, record: &MatchRecord) {
         self.total_matches += 1;
         let types: HashSet<TimelineType> =
             record.timelines.iter().map(|tl| tl.timeline_type).collect();
@@ -28,34 +30,25 @@ impl Collector for TimelineEventStats {
         }
     }
 
-    fn name(&self) -> &str {
-        "Timeline Event Distribution"
+    pub fn merge(mut self, other: Self) -> Self {
+        self.total_matches += other.total_matches;
+        for (ty, count) in other.matches_with {
+            *self.matches_with.entry(ty).or_insert(0) += count;
+        }
+        self
     }
-}
 
-impl fmt::Display for TimelineEventStats {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.total_matches == 0 {
-            return writeln!(f, "  No matches recorded.");
-        }
+    pub fn to_json(&self) -> serde_json::Value {
+        let mut entries: Vec<EventEntry> = self
+            .matches_with
+            .iter()
+            .map(|(&event, &count)| EventEntry { event, count })
+            .collect();
+        entries.sort_by(|a, b| b.count.cmp(&a.count));
 
-        let mut entries: Vec<_> = self.matches_with.iter().collect();
-        entries.sort_by(|a, b| b.1.cmp(a.1));
-
-        writeln!(f, "  Total matches: {}", self.total_matches)?;
-        writeln!(f, "  {:45} {:>8} {:>7}", "Event", "Matches", "%")?;
-        writeln!(f, "  {}", "-".repeat(62))?;
-
-        for (event, count) in &entries {
-            let pct = (**count as f64 / self.total_matches as f64) * 100.0;
-            writeln!(
-                f,
-                "  {:45} {:>8} {:>6.1}%",
-                format!("{:?}", event),
-                count,
-                pct
-            )?;
-        }
-        Ok(())
+        serde_json::json!({
+            "total_matches": self.total_matches,
+            "events": serde_json::to_value(entries).unwrap(),
+        })
     }
 }

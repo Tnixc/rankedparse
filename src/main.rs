@@ -2,42 +2,51 @@ mod analytics;
 mod match_record;
 mod types;
 
-use analytics::{CompletionTimeStats, ForfeitStats, Pipeline, SplitStats, TimelineEventStats};
+use analytics::SeasonData;
 use match_record::MatchRecord;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::time::Instant;
 
 fn main() {
-    (1..=10).into_par_iter().for_each(|i| {
-        let start = Instant::now();
-        println!("=== SEASON {} ===", i);
+    let mut season_stats: Vec<(usize, SeasonData)> = (1..=10)
+        .into_par_iter()
+        .map(|i| {
+            let start = Instant::now();
 
-        let path = format!("data/S{i}.jsonl");
-        let file = File::open(&path).expect("failed to open data file");
-        let reader = BufReader::new(file);
+            let path = format!("data/S{i}.jsonl");
+            let file = File::open(&path).expect("failed to open data file");
+            let reader = BufReader::new(file);
 
-        let mut pipeline = Pipeline::new()
-            .add(ForfeitStats::new())
-            .add(TimelineEventStats::new())
-            .add(SplitStats::new())
-            .add(CompletionTimeStats::new())
-            // .add(TemporalStats::new())
-            ;
+            let mut data = SeasonData::new();
 
-        for line in reader.lines() {
-            let Some(line) = line.ok() else { continue };
-            match serde_json::from_str::<MatchRecord>(&line) {
-                Ok(record) => pipeline.feed(&record),
-                Err(_) => pipeline.record_error(),
+            for line in reader.lines() {
+                let Some(line) = line.ok() else { continue };
+                match serde_json::from_str::<MatchRecord>(&line) {
+                    Ok(record) => data.feed(&record),
+                    Err(_) => data.record_error(),
+                }
             }
-        }
 
-        pipeline.report();
+            let dt = Instant::now().duration_since(start);
+            eprintln!("Season {i} took {dt:?}");
 
-        let dt = Instant::now().duration_since(start);
-        println!("  >>> Season {i} took {dt:?}");
-        println!();
-    })
+            (i, data)
+        })
+        .collect();
+
+    season_stats.sort_by_key(|(i, _)| *i);
+
+    let mut out =
+        File::create("output/analytics.jsonl").expect("failed to create output/analytics.jsonl");
+
+    let mut aggregate = SeasonData::new();
+    for (i, stats) in season_stats {
+        writeln!(out, "{}", stats.to_json(&i.to_string())).unwrap();
+        aggregate = aggregate.merge(stats);
+    }
+    writeln!(out, "{}", aggregate.to_json("all")).unwrap();
+
+    eprintln!("Wrote output/analytics.jsonl");
 }

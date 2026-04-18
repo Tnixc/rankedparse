@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::types::Millisec;
 
@@ -97,7 +97,7 @@ pub struct Completion {
     pub uuid: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Deserialize, Serialize)]
 pub enum TimelineType {
     // Adventure
     #[serde(rename = "adventure.adventuring_time")]
