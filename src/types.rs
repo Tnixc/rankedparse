@@ -39,6 +39,12 @@ pub struct Seconds(pub i128);
 )]
 pub struct Millisec(pub i128);
 
+impl Seconds {
+    pub const fn to_ms(self) -> i128 {
+        self.0 * 1000
+    }
+}
+
 impl From<Seconds> for Millisec {
     fn from(s: Seconds) -> Self {
         Millisec(s.0 * 1000)
