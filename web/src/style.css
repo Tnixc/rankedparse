@@ -8,6 +8,13 @@
 }
 
 :root {
+  --color-div-netherite: #9a5cc6;
+  --color-div-diamond: #2cbaa8;
+  --color-div-emerald: #47a036;
+  --color-div-gold: #dfa115;
+  --color-div-iron: #cecaca;
+  --color-div-coal: #555555;
+
   --vis-color0: #9a5cc6;
   --vis-color1: #2cbaa8;
   --vis-color2: #47a036;

@@ -61,7 +61,7 @@ export function divisionColors(): Record<Division, string> {
   if (!_divisionColors) {
     const style = getComputedStyle(document.documentElement);
     _divisionColors = Object.fromEntries(
-      DIVISIONS.map((div, i) => [div, style.getPropertyValue(`--vis-color${i}`).trim()]),
+      DIVISIONS.map((div) => [div, style.getPropertyValue(`--color-div-${div}`).trim()]),
     ) as Record<Division, string>;
   }
   return _divisionColors;

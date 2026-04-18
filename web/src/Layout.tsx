@@ -11,13 +11,13 @@ export function Layout() {
   return (
     <div className="flex min-h-screen bg-white text-black dark:bg-black dark:text-white">
       <nav className="w-64 shrink-0 border-r border-border bg-surface sticky top-0 h-screen">
-        <ul className="flex flex-col h-full">
+        <ul className="flex flex-col h-full p-1">
           {NAV_ITEMS.map(({ to, label }) => (
             <li key={to}>
               <NavLink
                 to={to}
                 className={({ isActive }) =>
-                  `block p-2 text-sm hover:underline ${
+                  `block p-3 py-1 text-sm hover:underline ${
                     isActive ? "text-black font-bold" : "text-muted"
                   }`
                 }
@@ -26,7 +26,7 @@ export function Layout() {
               </NavLink>
             </li>
           ))}
-          <li className="text-sm mt-auto">
+          <li className="text-sm mt-auto p-1">
             <p>
               made by{" "}
               <a href="https://github.com/Tnixc" className="text-blue-700 hover:underline">
