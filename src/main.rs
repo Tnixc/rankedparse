@@ -4,12 +4,13 @@ mod types;
 
 use analytics::{CompletionTimeStats, ForfeitStats, Pipeline, SplitStats, TimelineEventStats};
 use match_record::MatchRecord;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::time::Instant;
 
 fn main() {
-    for i in 1..=10 {
+    (1..=10).into_par_iter().for_each(|i| {
         let start = Instant::now();
         println!("=== SEASON {} ===", i);
 
@@ -38,5 +39,5 @@ fn main() {
         let dt = Instant::now().duration_since(start);
         println!("  >>> Season {i} took {dt:?}");
         println!();
-    }
+    })
 }
