@@ -11,7 +11,8 @@ use std::io::{BufRead, BufReader};
 use crate::types::{Millisec, Seconds};
 
 fn main() {
-    let file = File::open("data/S4.jsonl").expect("failed to open data file");
+    let path = std::env::args().nth(1).unwrap_or("data/S4.jsonl".into());
+    let file = File::open(&path).expect("failed to open data file");
     let reader = BufReader::new(file);
 
     let mut errors = 0;

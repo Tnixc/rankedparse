@@ -43,9 +43,9 @@ pub struct Rank {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Seed {
-    pub id: Option<u64>,
+    pub id: Option<serde_json::Value>,
     pub nether: Option<String>,
-    pub end_towers: Option<String>,
+    pub end_towers: serde_json::Value,
     pub overworld: Option<String>,
     pub variations: serde_json::Value,
 }
