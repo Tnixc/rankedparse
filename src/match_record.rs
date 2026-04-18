@@ -240,6 +240,8 @@ pub enum TimelineType {
     NetherUneasyAlliance,
     #[serde(rename = "nether.use_lodestone")]
     NetherUseLodestone,
+    #[serde(rename = "nether.projectelo.timeline.complete")]
+    ProjectEloNetherComplete,
 
     // Project Elo
     #[serde(rename = "projectelo.timeline.blind_travel")]

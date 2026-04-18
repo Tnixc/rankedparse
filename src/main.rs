@@ -30,11 +30,10 @@ fn main() {
             .filter_map(|line| {
                 serde_json::from_str::<MatchRecord>(&line)
                     .inspect_err(|e| {
-                        errors += 1;
                         if errors < 1 {
-                            dbg!(line);
                             dbg!(e);
                         }
+                        errors += 1;
                     })
                     .ok()
             })
